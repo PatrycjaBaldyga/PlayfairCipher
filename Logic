@@ -1,0 +1,221 @@
+class Logic
+{
+    private final char[][] matrix = new char[6][6];
+    private final char[] charArray = new char[36];
+    private String alphabet = "AĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŻŹ.";
+    private String encrypted = "";
+    private String decrypted = "";
+
+    //funkcja tworzaca tablicę na podstawie podanego klucza
+    void createArray(String keyword)
+    {
+        keyword = keyword.toUpperCase();
+        boolean exists;
+        int val = 0;
+        //wstawia litery klucza do tablicy
+        for (int i = 0; i < keyword.length(); i++)
+        {
+            exists = false;
+            if (keyword.charAt(i) != ' ')
+            {
+                for (int j = 0; j < charArray.length; j++)
+                {
+                    //jesli litera istnieje, ustaw flage na true
+                    if (keyword.charAt(i) == charArray[j])
+                    {
+                        exists = true;
+                    }
+                }
+                //wstaw litere do tablicy
+                if (!exists)
+                {
+                    charArray[val] = keyword.charAt(i);
+                    val++;
+                }
+            }
+            //usun wykorzystana litere z alfabetu
+            alphabet = alphabet.replaceAll(Character.toString(keyword.charAt(i)), "");
+        }
+
+        //zapelnij tablice pozostalymi literami z alfabetu
+        for (int i = 0; i < alphabet.length(); i++)
+        {
+            charArray[val] = alphabet.charAt(i);
+            val++;
+        }
+        val = 0;
+
+        //do wszystkich pozycji macierzy (i,j) przypisz kolejna litere z tablicy
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 6; j++)
+            {
+                matrix[i][j] = charArray[val];
+                val++;
+                System.out.print(matrix[i][j] + "\t");
+            }
+            System.out.println();
+        }
+    }
+
+    //przygotowanie podanej wiadomosci do de/enkrypcji
+    String prepareMsg(String msg)
+    {
+        //usun spacje
+        msg = msg.replaceAll(" ","");
+
+        int val = 0;
+        int lenLeft = msg.length()-2;
+        String dividedPair = "";
+        String pair = "";
+        while (lenLeft >= 0)
+        {
+            pair = msg.substring(val, val + 2);
+            //jesli para ma dwie identyczne litery, rozdziel je x-em
+            if (pair.charAt(0) == pair.charAt(1))
+            {
+                dividedPair = pair.charAt(0) + "x" + pair.charAt(1);
+                msg = msg.replaceFirst(pair, dividedPair);
+                lenLeft++;
+            }
+            lenLeft -= 2;
+            val += 2;
+        }
+        //jesli liczba znakow w wiadomosci jest nieparzysta,dodaj litere x
+        if (msg.length() %2 != 0)
+        {
+            msg = msg + 'x';
+        }
+        //wielkie litery
+        return msg.toUpperCase();
+    }
+
+    //przygotowana wiadomosc podziel na digramy, wybierz eckrypcje lub dekrypcje
+    void divideAndTag(String msg, String tag)
+    {
+        int val = 0;
+        while (val < msg.length())
+        {
+            locateAndExecute(msg.substring(val, val + 2), tag);
+            val += 2;
+        }
+    }
+
+    //przypisuje indeksy macierzy do odpowiednich wierszy i kolumn
+    void locateAndExecute(String digraph, String tag)
+    {
+        char c1 = digraph.charAt(0);
+        char c2 = digraph.charAt(1);
+        int row1 = 0, col1 = 0, row2 = 0, col2 = 0;
+        //korelacja indeksow tablicy do wierszy i kolumn znakow z pary
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 6; j++)
+            {
+                if (matrix[i][j] == c1)
+                {
+                    row1 = i;
+                    col1 = j;
+                }
+                else if (matrix[i][j] == c2)
+                {
+                    row2 = i;
+                    col2 = j;
+                }
+            }
+        }
+        //uruchomienie mechanizmu enkrypcji/dekrypcji za pomocą tagow
+        if (tag == "Encrypt")
+            encrypt(row1, col1, row2, col2);
+        else if (tag == "Decrypt")
+            decrypt(row1, col1, row2, col2);
+    }
+
+    //mechanizm enkrypcji
+    void encrypt(int row1, int col1, int row2, int col2)
+    {
+        //jesli znaki znajduja sie w tym samym wierszu, wybierz znak o kolumne dalej
+        if (row1 == row2)
+        {
+            col1 = col1 + 1;
+            col2 = col2 + 1;
+            //jesli znak w ostatniej kolumnie, wybierz znak z pierwszej
+            if (col1 > 5)
+                col1 = 0;
+            if (col2 > 5)
+                col2 = 0;
+            //wypisz oba znalezione znaki o danych indeksach z macierzy
+            encrypted += (Character.toString(matrix[row1][col1]) + Character.toString(matrix[row1][col2]));
+        }
+        //jesli znaki znajduja sie w tej samej kolumnie, wybierz znak o wiersz dalej
+        else if (col1 == col2)
+        {
+            row1 = row1 + 1;
+            row2 = row2 + 1;
+            //jesli znak w ostatnim wierszu, wybierz znak z pierwszego
+            if (row1 > 5)
+                row1 = 0;
+            if (row2 > 5)
+                row2 = 0;
+            //wypisz oba znalezione znaki o danych indeksach z macierzy
+            encrypted += (Character.toString(matrix[row1][col1]) + Character.toString(matrix[row2][col1]));
+        }
+        //w pozostalych przypadkach
+        else
+        {
+            //wypisz znak na przecieciu wiersza pierwszego znaku i kolumny drugiego znaku oraz znak na przecieciu wiersza drugieg znaku i kolumny pierwszego znaku
+            encrypted += ( Character.toString(matrix[row1][col2]) + Character.toString(matrix[row2][col1]));
+        }
+    }
+
+    //zwroc zaszyfrowany string
+    String encryptedString()
+    {
+        return encrypted;
+    }
+
+    //mechanizm dekrypcji - odwrotnosc enkrypcji
+    void decrypt(int row1, int col1, int row2, int col2)
+    {
+        //jesli znaki znajduja sie w tym samym wierszu, wybierz znak o kolumne wczesniej
+        if (row1 == row2)
+        {
+            col1 = col1 - 1;
+            col2 = col2 - 1;
+            //jesli znak w pierwszej kolumnie, wybierz znak z ostatniej
+            if (col1 < 0)
+                col1 = 5;
+            if (col2 < 0)
+                col2 = 5;
+            //wypisz oba znalezione znaki o danych indeksach z macierzy
+            decrypted += (Character.toString(matrix[row1][col1]) + Character.toString(matrix[row1][col2]));
+        }
+        //jesli znaki znajduja sie w tej samej kolumnie, wybierz znak o wiersz wczesniej
+        else if (col1 == col2)
+        {
+            row1 = row1 - 1;
+            row2 = row2 - 1;
+            //jesli znak w pierwszym wierszu, wybierz znak z ostatniego
+            if (row1 < 0)
+                row1 = 5;
+            if (row2 < 0)
+                row2 = 5;
+            //wypisz oba znalezione znaki o danych indeksach z macierzy
+            decrypted += (Character.toString(matrix[row1][col1]) + Character.toString(matrix[row2][col1]));
+        }
+        //w pozostalych przypadkach
+        else
+        {
+            //wypisz znak na przecieciu wiersza pierwszego znaku i kolumny drugiego znaku oraz znak na przecieciu wiersza drugieg znaku i kolumny pierwszego znaku
+            decrypted += (Character.toString(matrix[row1][col2]) + Character.toString(matrix[row2][col1]));
+        }
+    }
+
+    //zwroc zdeszyfrowany string
+    String decryptedString()
+    {
+        return decrypted;
+    }
+
+}
+
