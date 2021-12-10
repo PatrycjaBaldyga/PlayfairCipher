@@ -1,0 +1,32 @@
+import java.util.Scanner;
+
+public class PlayfairCipher
+{
+    public static void main(String[] args) throws Exception
+    {
+        Scanner scan = new Scanner(System.in);
+
+        //pobranie klucza i wiadomości
+        System.out.print("Wprowadź klucz: ");
+        String key = scan.nextLine();
+        System.out.print("Wprowadź wiadomość: ");
+        String msg = scan.nextLine();
+
+        Logic logic = new Logic();
+        //stworzenie tablicy na podstawie klucza
+        logic.createArray(key);
+        //przygotowanie wiadomosci do de/enkrypcji
+        msg = logic.prepareMsg(msg);
+
+        //szyfrowanie
+        logic.divideAndTag(msg, "Encrypt");
+        String encrypted = logic.encryptedString();
+        System.out.println("Wiadomość zaszyfrowana: " + encrypted);
+
+        //deszyfrowanie
+        logic.divideAndTag(encrypted, "Decrypt");
+        String decrypted = logic.decryptedString();
+        System.out.println("Wiadomość zdeszyfrowana: " + decrypted);
+
+    }
+}
