@@ -24,7 +24,7 @@ public class PlayfairCipher
         System.out.println("Wiadomość zaszyfrowana: " + encrypted);
 
         //deszyfrowanie
-        logic.divideAndTag(encrypted, "Decrypt");
+        logic.divideAndTag(msg, "Decrypt");
         String decrypted = logic.decryptedString();
         System.out.println("Wiadomość zdeszyfrowana: " + decrypted);
 
