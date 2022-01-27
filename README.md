@@ -10,5 +10,6 @@ java -jar PlayfairCipher.jar
 
 To encrypt or decrypt a message:
 
-1. Input your message (plaintext or encrypted) into the console, then press enter.
-2. Choose the encrypted or decrypted version of your message.
+1. Enter the secret key.
+2. Input your message (plaintext or encrypted) into the console, then press enter.
+3. Choose the encrypted or decrypted version of your message.
